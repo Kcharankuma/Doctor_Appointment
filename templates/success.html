@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="card border-0 shadow-lg p-4 d-inline-block text-start" style="max-width: 500px; border-radius: 15px;">
+        <h3 class="text-success fw-bold text-center mb-3">✅ Booking Confirmed!</h3>
+        <p>Thank you, <strong>{{ data.name }}</strong>. Your details have been recorded.</p>
+        <hr>
+        <p class="mb-1"><strong>Doctor:</strong> {{ info.doctor_name }}</p>
+        <p class="mb-1"><strong>Date:</strong> {{ data.date }}</p>
+        <p class="mb-1"><strong>Time Session:</strong> {{ data.time_slot }}</p>
+        <p class="mb-3"><strong>Clinic:</strong> {{ info.clinic_name }}</p>
+
+        <a href="https://wa.me/91{{ data.phone }}?text=Hello%20{{ data.name }},%20your%20appointment%20at%20{{ info.clinic_name }}%20is%20confirmed%20for%20{{ data.date }}%20({{ data.time_slot }})." 
+           class="btn btn-success w-100 py-2 fw-bold my-2" target="_blank">
+            💬 Send Confirmation via WhatsApp
+        </a>
+
+        <div class="text-center mt-3">
+            <a href="/" class="btn btn-outline-secondary btn-sm">Return to Home Page</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

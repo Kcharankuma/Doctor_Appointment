@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm text-center">
+    <h1 class="display-5 fw-bold text-primary">{{ info.clinic_name }}</h1>
+    <h3 class="text-secondary mb-3">{{ info.doctor_name }}</h3>
+    <span class="badge bg-info text-dark fs-6">{{ info.qualification }}</span>
+    <p class="lead mt-3">{{ info.experience }}</p>
+    <a href="/appointment" class="btn btn-primary btn-lg mt-2 fw-bold">Book an Appointment Today</a>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 p-4">
+            <h4 class="text-primary mb-3">🕒 Clinic Timings</h4>
+            <p class="fs-5">{{ info.timings }}</p>
+            <p class="text-muted">Emergency consultations available on request.</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 p-4">
+            <h4 class="text-primary mb-3">📍 Contact & Address</h4>
+            <p class="mb-2"><strong>Phone:</strong> <a href="tel:{{ info.phone }}">{{ info.phone }}</a></p>
+            <p class="mb-2"><strong>Location:</strong> {{ info.address }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

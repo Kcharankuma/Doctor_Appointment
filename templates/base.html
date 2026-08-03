@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ info.clinic_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🏥 {{ info.clinic_name }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link text-white ms-2" href="/">Home</a>
+                    <a class="nav-link text-white ms-2" href="/services">Services</a>
+                    <a class="btn btn-warning ms-2 fw-semibold" href="/appointment">Book Appointment</a>
+                    {% if session.get('logged_in') %}
+                        <a class="btn btn-danger ms-2 fw-semibold" href="/admin/logout">Logout</a>
+                    {% else %}
+                        <a class="btn btn-outline-light ms-2 fw-semibold" href="/admin">👨‍⚕️ Doctor Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-1"><strong>{{ info.clinic_name }}</strong> | {{ info.doctor_name }} ({{ info.qualification }})</p>
+            <p class="mb-1">📍 {{ info.address }} | 📞 {{ info.phone }}</p>
+            <p class="small text-muted mb-0">🕒 {{ info.timings }}</p>
+        </div>
+    </footer>
+
+    <script href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

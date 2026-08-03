@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    {% if login_mode %}
+        <!-- LOGIN FORM -->
+        <div class="row justify-content-center py-5">
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm p-4">
+                    <h3 class="text-center text-primary fw-bold mb-3">👨‍⚕️ Doctor Login</h3>
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    <form action="/admin/login" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Admin Password</label>
+                            <input type="password" name="password" class="form-control" required placeholder="Enter doctor access password">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Access Dashboard</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- DASHBOARD BOARD -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary fw-bold mb-0">Doctor Dashboard</h2>
+            <span class="badge bg-primary fs-6">Active Bookings: {{ bookings|length }}</span>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <form method="GET" action="/admin" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by patient name or phone..." value="{{ search_query }}">
+                <button class="btn btn-primary" type="submit">Search</button>
+                {% if search_query %}
+                    <a href="/admin" class="btn btn-outline-secondary">Clear Filter</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Patient Name</th>
+                                <th>Phone Number</th>
+                                <th>Date</th>
+                                <th>Time Slot</th>
+                                <th>Reason / Symptoms</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if bookings %}
+                                {% for item in bookings %}
+                                <tr>
+                                    <td>{{ item['id'] }}</td>
+                                    <td class="fw-bold">{{ item['name'] }}</td>
+                                    <td><a href="tel:{{ item['phone'] }}" class="text-decoration-none">📞 {{ item['phone'] }}</a></td>
+                                    <td>{{ item['date'] }}</td>
+                                    <td><span class="badge bg-info text-dark">{{ item['time_slot'] }}</span></td>
+                                    <td>{{ item['reason'] }}</td>
+                                    <td class="text-center">
+                                        <form action="/delete/{{ item['id'] }}" method="POST" onsubmit="return confirm('Delete this appointment record?');" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm fw-bold">🗑️ Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No patient appointments found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

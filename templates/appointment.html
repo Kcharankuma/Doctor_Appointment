@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4">
+            <h2 class="text-center text-primary mb-4 fw-bold">Book a Clinic Appointment</h2>
+
+            {% if error_msg %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ⚠️ {{ error_msg }}
+            </div>
+            {% endif %}
+
+            <form action="/appointment" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Patient Name</label>
+                    <input type="text" name="name" class="form-control" required minlength="3" maxlength="50" pattern="[A-Za-z\s]+" title="Letters and spaces only" placeholder="Enter patient's full name">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mobile Phone Number</label>
+                    <input type="tel" name="phone" class="form-control" required pattern="[6-9][0-9]{9}" maxlength="10" title="10-digit mobile number starting with 6, 7, 8, or 9" placeholder="10-digit mobile number">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Preferred Date</label>
+                        <input type="date" id="appointment_date" name="date" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Time Session</label>
+                        <select name="time_slot" class="form-select" required>
+                            <option value="Morning (9 AM - 1 PM)">Morning Session (9:00 AM - 1:00 PM)</option>
+                            <option value="Evening (5 PM - 9 PM)">Evening Session (5:00 PM - 9:00 PM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Reason for Visit / Symptoms</label>
+                    <textarea name="reason" class="form-control" rows="3" required minlength="5" maxlength="200" placeholder="Describe symptoms (e.g., fever, cold, general BP checkup)"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Automatically restrict calendar to TODAY and FUTURE dates only
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appointment_date').setAttribute('min', today);
+</script>
+{% endblock %}
