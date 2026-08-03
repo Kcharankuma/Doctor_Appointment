@@ -8,7 +8,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 
 app = Flask(__name__)
 
-# SECURITY: Secret key for session management (Change this to a random string)
+# SECURITY: Secret key for session management
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clinic_production_secret_key_998877")
+
+# ADMIN SECURITY: Password to access the doctor dashboard
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "DoctorPass2026")
 
 # ==========================================
