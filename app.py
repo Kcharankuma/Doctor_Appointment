@@ -9,21 +9,18 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 app = Flask(__name__)
 
 # SECURITY: Secret key for session management (Change this to a random string)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clinic_production_secret_key_998877")
-
-# ADMIN SECURITY: Password to access the doctor dashboard
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "doctor123")  # Change 'doctor123' to your desired password
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "DoctorPass2026")
 
 # ==========================================
 # 1. CLINIC DETAILS (Customize as needed)
 # ==========================================
 CLINIC_INFO = {
-    "doctor_name": "Dr. [Father's Name]",
-    "qualification": "RMP (Registered Medical Practitioner)",
+    "doctor_name": "Dr.Kammari Maheswara Achari",
+    "qualification": "RMP (Rural Medical Practitioner)",
     "clinic_name": "Primary Health Clinic",
-    "experience": "15+ Years of Dedicated Healthcare",
-    "phone": "+91 98765 43210",
-    "address": "Main Road, Near Bus Stand, Town Name",
+    "experience": "25+ Years of Dedicated Healthcare",
+    "phone": "+91 7075575715",
+    "address": "Gorukallu Village, Near Bus Stand, Nandyal",
     "timings": "Morning: 9:00 AM - 1:00 PM | Evening: 5:00 PM - 9:00 PM (Mon - Sat)"
 }
 
