@@ -6,7 +6,7 @@ app.secret_key = "rmp_clinic_secure_key"
 
 CLINIC_INFO = {
     "doctor_name": "Dr.KAMMARI MAHESWARA ACHARI",
-    "qualification": "RMP (Registered Medical Practitioner)",
+    "qualification": "RMP (Rural Medical Practitioner)",
     "clinic_name": "Primary Healthcare Center",
     "experience": "25+ Years of Dedicated Community Care",
     "phone": "+91 7075575715",
