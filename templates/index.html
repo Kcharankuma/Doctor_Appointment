@@ -1,35 +1,25 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="p-5 mb-5 bg-custom-teal text-white rounded-4 shadow text-center position-relative overflow-hidden">
-    <div class="row align-items-center">
-        <div class="col-md-4 text-center mb-4 mb-md-0">
-            <!-- Father's Photo Reference -->
-            <img src="{{ url_for('static', filename='father_photo.jpg') }}" alt="Doctor Profile" class="doctor-img">
-        </div>
-        <div class="col-md-8 text-md-start text-center">
-            <span class="badge bg-white text-dark mb-2 px-3 py-2 uppercase fw-bold">{{ info.qualification }}</span>
-            <h1 class="display-5 fw-bold">{{ info.doctor_name }}</h1>
-            <p class="fs-5 opacity-90 mt-2">{{ info.experience }}</p>
-            <p class="mb-4">Providing accessible, compassionate healthcare and general consultations for families.</p>
-            <a href="/appointment" class="btn btn-custom-accent btn-lg px-4 fw-bold">Book an Appointment</a>
-        </div>
+<div class="row align-items-center py-4 g-4 rounded-3 p-3" style="background-color: #087990;">
+    <div class="col-md-5 text-center">
+        <img src="{{ url_for('static', filename='image/doctor.jpg') }}" alt="Doctor Photo" class="doctor-img img-fluid">
     </div>
-</div>
+    <div class="col-md-7 text-white">
+        <span class="badge bg-white text-dark fw-bold mb-2">{{ info.qualification }}</span>
+        <h1 class="fw-bold display-6 mb-2 text-white">{{ info.doctor_name }}</h1>
+        <p class="fw-bold fs-5 mb-3 text-warning">⭐ {{ info.experience }}</p>
+        <p class="lead mb-4 text-light">Providing accessible, compassionate healthcare and medical consultations to the local community.</p>
+        
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <a href="/appointment" class="btn btn-custom-accent btn-lg px-4 py-2 fw-bold">📅 Book an Appointment</a>
+            <a href="tel:+917075575715" class="btn btn-light text-dark btn-lg px-4 py-2 fw-bold">📞 Call Direct</a>
+        </div>
 
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="card card-custom p-4 h-100">
-            <h4 class="text-custom-teal fw-bold mb-3" style="color: var(--primary-teal);">🕒 Clinic Timings</h4>
-            <p class="fs-5 mb-2">{{ info.timings }}</p>
-            <p class="text-muted small">Walk-ins are welcome during regular hours. Emergency cases are prioritized.</p>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card card-custom p-4 h-100">
-            <h4 class="fw-bold mb-3" style="color: var(--primary-teal);">📞 Contact & Location</h4>
-            <p class="mb-2"><strong>Phone Number:</strong> {{ info.phone }}</p>
-            <p class="mb-0"><strong>Address:</strong> {{ info.address }}</p>
+        <div class="card card-custom p-3 bg-white text-dark">
+            <h6 class="fw-bold text-dark mb-1">📍 Clinic Location & Timings</h6>
+            <p class="small text-muted mb-1">{{ info.address }}</p>
+            <p class="small text-muted mb-0">🕒 {{ info.timings }}</p>
         </div>
     </div>
 </div>

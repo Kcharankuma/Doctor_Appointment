@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ info.clinic_name }}</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ info.clinic_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
         :root {
-            --primary-teal: #0e7490;
+            --primary-teal: #087990;
             --dark-navy: #0f172a;
             --accent-green: #10b981;
             --bg-soft: #f8fafc;
@@ -21,23 +19,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .bg-custom-teal {
-            background-color: var(--primary-teal) !important;
-        }
-
         .bg-custom-navy {
             background-color: var(--dark-navy) !important;
-        }
-
-        .btn-custom-teal {
-            background-color: var(--primary-teal);
-            color: white;
-            border: none;
-        }
-
-        .btn-custom-teal:hover {
-            background-color: #0891b2;
-            color: white;
         }
 
         .btn-custom-accent {
@@ -46,83 +29,66 @@
             border: none;
         }
 
-        .btn-custom-accent:hover {
-            background-color: #059669;
-            color: white;
-        }
-
-        .doctor-img {
-            width: 220px;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 5px solid white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-
         .card-custom {
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-    </style>
-    </head>
-    <body class="d-flex flex-column min-vh-100">
 
-        <!-- Header Navigation -->
-        <!-- Header Navigation -->
-        <nav
-            class="navbar navbar-expand-lg navbar-dark bg-custom-navy sticky-top py-3">
-            <div class="container">
-                <a class="navbar-brand fw-bold fs-4 text-white" href="/">🏥 {{
-                    info.clinic_name }}</a>
-                <button class="navbar-toggler border-0" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <div
-                        class="navbar-nav ms-auto align-items-lg-center gap-2 pt-3 pt-lg-0">
-                        <a class="nav-link text-white text-center py-2"
-                            href="/">Home</a>
-                        <a class="nav-link text-white text-center py-2"
-                            href="/services">Services</a>
-                        <a
-                            class="btn btn-custom-accent fw-semibold text-center py-2 px-3 mt-2 mt-lg-0"
-                            href="/appointment">📅 Book Appointment</a>
-                        <a
-                            class="btn btn-outline-light btn-sm text-center py-2 px-3 mt-2 mt-lg-0"
-                            href="/login">Doctor Login</a>
-                    </div>
+        /* Doctor Profile Picture Sizing */
+        .doctor-img {
+            width: 200px !important;
+            height: 200px !important;
+            min-width: 200px !important;
+            min-height: 200px !important;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-custom-navy sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4 text-white" href="/">🏥 {{ info.clinic_name }}</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto align-items-lg-center gap-2 pt-3 pt-lg-0">
+                    <a class="nav-link text-white text-center py-2" href="/">Home</a>
+                    <a class="nav-link text-white text-center py-2" href="/services">Services</a>
+                    <a class="btn btn-custom-accent fw-semibold text-center py-2 px-3 mt-2 mt-lg-0" href="/appointment">📅 Book Appointment</a>
+                    <a class="btn btn-outline-light btn-sm text-center py-2 px-3 mt-2 mt-lg-0" href="/login">Doctor Login</a>
                 </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <!-- Main Page Content -->
-        <main class="container my-5 flex-grow-1">
-            {% block content %}{% endblock %}
-        </main>
+    <!-- Main Page Content -->
+    <main class="container my-5 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
 
-        <!-- Footer -->
-        <footer class="bg-custom-navy text-white py-4 mt-auto">
-            <div class="container text-center">
-                <p class="mb-1 fw-bold fs-5">{{ info.clinic_name }}</p>
-                <p class="mb-1 text-light">{{ info.doctor_name }} ({{
-                    info.qualification }})</p>
-                <p class="mb-1 small">📍 {{ info.address }} | 📞 {{ info.phone
-                    }}</p>
-                <p class="small text-muted mb-0">🕒 {{ info.timings }}</p>
-            </div>
-        </footer>
+    <!-- Footer -->
+    <footer class="bg-custom-navy text-white py-4 mt-auto">
+        <div class="container text-center">
+            <p class="mb-1 fw-bold fs-5">{{ info.clinic_name }}</p>
+            <p class="mb-1 text-light">{{ info.doctor_name }} ({{ info.qualification }})</p>
+            <p class="mb-1 small">📍 {{ info.address }} | 📞 {{ info.phone }}</p>
+            <p class="small text-muted mb-0">🕒 {{ info.timings }}</p>
+        </div>
+    </footer>
 
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Floating Emergency Call Button for Mobile -->
-        <a href="tel:{{ info.phone }}"
-            class="btn btn-danger position-fixed bottom-0 end-0 m-3 shadow-lg rounded-pill px-4 py-3 fw-bold d-flex align-items-center gap-2"
-            style="z-index: 1000; border: 2px solid white;">
-            📞 <span>Call Doctor</span>
-        </a>
-    </body>
+    <!-- Floating Emergency Call Button -->
+    <a href="tel:+917075575715" class="btn btn-danger position-fixed bottom-0 end-0 m-3 shadow-lg rounded-pill px-4 py-3 fw-bold d-flex align-items-center gap-2" style="z-index: 1000; border: 2px solid white;">
+        📞 <span>Call Doctor</span>
+    </a>
+</body>
 </html>

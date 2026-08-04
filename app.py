@@ -1,40 +1,56 @@
 import sqlite3
+import smtplib
+from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from twilio.rest import Client  # <--- ADD THIS LINE
-
-# Twilio Configuration
-TWILIO_ACCOUNT_SID = 'your_account_sid_here'
-TWILIO_AUTH_TOKEN = 'your_auth_token_here'
-TWILIO_PHONE_NUMBER = '+1234567890'    # Your Twilio Virtual Number
-DOCTOR_PHONE_NUMBER = '+919876543210'  # Your Father's Mobile Number
-
-def send_doctor_sms(name, date, time_slot, phone):
-    try:
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        message_body = f"🏥 New Appointment!\nPatient: {name}\nPhone: {phone}\nDate: {date}\nSlot: {time_slot}"
-        
-        client.messages.create(
-            body=message_body,
-            from_=TWILIO_PHONE_NUMBER,
-            to=DOCTOR_PHONE_NUMBER
-        )
-    except Exception as e:
-        print("Failed to send SMS:", e)
 
 app = Flask(__name__)
 app.secret_key = "rmp_clinic_secure_key"
 
+# Email Configuration
+SENDER_EMAIL = "charankumark816@gmail.com"  # Your sender Gmail address
+SENDER_PASSWORD = "dtnjsustgcsrehdf"     # Replace with your 16-character App Password from Google
+DOCTOR_EMAIL = "charankumark310@gmail.com"      # Replace with your father's Gmail address to receive alerts
+
 CLINIC_INFO = {
     "doctor_name": "Dr.KAMMARI MAHESWARA ACHARI",
-    "qualification": "RMP (Rural Medical Practitioner)",
+    "qualification": "RMP (RURAL Medical Practitioner)",
     "clinic_name": "Primary Healthcare Center",
     "experience": "25+ Years of Dedicated Community Care",
     "phone": "+91 7075575715",
-    "address": "Gorukallu Village, Near Bus Stand, Nandyal Andhra Pradesh India-518501",
-    "timings": "Morning: 9:00 AM - 12:30 PM | Evening: 5:00 PM - 9:00 PM (Mon - Sat)"
+    "address": "Gorukallu Village, Near Bus Stand, Nandyal, Andhra Pradesh,India-518501",
+    "timings": "Morning: 9:00 AM - 1:00 PM | Evening: 5:00 PM - 9:00 PM (Mon - Sat)"
 }
+
+def send_email_notification(name, phone, date, time_slot, reason):
+    try:
+        subject = f"🏥 New Appointment: {name}"
+        body = f"""
+        New Patient Appointment Booked!
+
+        Patient Name: {name}
+        Phone Number: {phone}
+        Date: {date}
+        Session: {time_slot}
+        Reason: {reason if reason else 'General Consultation'}
+        """
+        
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = DOCTOR_EMAIL
+
+        # Use TLS on Port 587 (More reliable than SSL 465)
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
+        server.starttls()
+        # Remove spaces from app password just in case
+        clean_password = SENDER_PASSWORD.replace(" ", "")
+        server.login(SENDER_EMAIL, clean_password)
+        server.sendmail(SENDER_EMAIL, DOCTOR_EMAIL, msg.as_string())
+        server.close()
+        print("Email notification sent successfully!")
+    except Exception as e:
+        print("Email notification failed with error:", e)
 
 # Database Initialization
 def init_db():
@@ -89,8 +105,8 @@ def book_appointment():
         conn.commit()
         conn.close()
 
-        # <--- ADD THIS LINE HERE TO TRIGGER SMS AUTOMATICALLY
-        send_doctor_sms(name, date, time_slot, phone)
+        # Send Free Instant Email Alert to Your Father's Phone
+        send_email_notification(name, phone, date, time_slot, reason)
 
         appointment_record = {
             "name": name,
@@ -110,7 +126,6 @@ def doctor_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        # CHANGE YOUR CREDENTIALS HERE:
         if username == "Doctor" and password == "Charan@816":
             session['logged_in'] = True
             return redirect(url_for('doctor_dashboard'))
@@ -119,7 +134,7 @@ def doctor_login():
 
     return render_template('login.html', info=CLINIC_INFO)
 
-# Doctor Dashboard with Database Fetch
+# Doctor Dashboard
 @app.route('/dashboard')
 def doctor_dashboard():
     if not session.get('logged_in'):
@@ -137,7 +152,7 @@ def doctor_dashboard():
     ]
     return render_template('dashboard.html', info=CLINIC_INFO, appointments=appointments)
 
-# Complete or Delete Appointment
+# Complete / Delete Appointment
 @app.route('/appointment/delete/<int:app_id>')
 def delete_appointment(app_id):
     if not session.get('logged_in'):
@@ -149,7 +164,7 @@ def delete_appointment(app_id):
     conn.commit()
     conn.close()
     
-    flash("Appointment marked as completed/removed.", "success")
+    flash("Appointment marked as completed.", "success")
     return redirect(url_for('doctor_dashboard'))
 
 @app.route('/logout')
