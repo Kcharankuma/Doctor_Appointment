@@ -3,55 +3,76 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-0" style="color: var(--dark-navy);">📋 Patient Appointments</h2>
+        <h2 class="fw-bold mb-0" style="color: var(--dark-navy);">📋 Patient
+            Appointments</h2>
     </div>
     <a href="/logout" class="btn btn-outline-danger btn-sm">Logout</a>
 </div>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} p-2 small mb-3">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} p-2 small mb-3">{{ message }}</div>
+{% endfor %}
+{% endif %}
 {% endwith %}
+
+<!-- Add above the table in templates/dashboard.html -->
+<div class="mb-3">
+    <input type="text" id="patientSearch" class="form-control" placeholder="🔍 Search patient by name or phone...">
+</div>
+
+<script>
+    document.getElementById('patientSearch').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+</script>
 
 <div class="card card-custom p-4">
     {% if appointments %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Patient Name</th>
-                        <th>Phone</th>
-                        <th>Date</th>
-                        <th>Session</th>
-                        <th>Reason</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in appointments %}
-                    <tr>
-                        <td>{{ item.id }}</td>
-                        <td class="fw-bold">{{ item.name }}</td>
-                        <td>
-                            <a href="tel:{{ item.phone }}" class="text-decoration-none">📞 {{ item.phone }}</a>
-                        </td>
-                        <td><span class="badge bg-info text-dark">{{ item.date }}</span></td>
-                        <td>{{ item.time_slot }}</td>
-                        <td>{{ item.reason }}</td>
-                        <td>
-                            <a href="/appointment/delete/{{ item.id }}" class="btn btn-sm btn-outline-success">Mark Done</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Patient Name</th>
+                    <th>Phone</th>
+                    <th>Date</th>
+                    <th>Session</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in appointments %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td class="fw-bold">{{ item.name }}</td>
+                    <td>
+                        <a href="tel:{{ item.phone }}"
+                            class="text-decoration-none">📞 {{ item.phone }}</a>
+                    </td>
+                    <td><span class="badge bg-info text-dark">{{ item.date
+                            }}</span></td>
+                    <td>{{ item.time_slot }}</td>
+                    <td>{{ item.reason }}</td>
+                    <td>
+                        <a href="/appointment/delete/{{ item.id }}"
+                            class="btn btn-sm btn-outline-success">Mark Done</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-        <p class="text-muted text-center py-4 mb-0">No active appointments right now.</p>
+    <p class="text-muted text-center py-4 mb-0">No active appointments right
+        now.</p>
     {% endif %}
 </div>
 {% endblock %}

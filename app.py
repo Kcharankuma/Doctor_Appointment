@@ -1,5 +1,27 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from twilio.rest import Client  # <--- ADD THIS LINE
+
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = 'your_account_sid_here'
+TWILIO_AUTH_TOKEN = 'your_auth_token_here'
+TWILIO_PHONE_NUMBER = '+1234567890'    # Your Twilio Virtual Number
+DOCTOR_PHONE_NUMBER = '+919876543210'  # Your Father's Mobile Number
+
+def send_doctor_sms(name, date, time_slot, phone):
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        message_body = f"🏥 New Appointment!\nPatient: {name}\nPhone: {phone}\nDate: {date}\nSlot: {time_slot}"
+        
+        client.messages.create(
+            body=message_body,
+            from_=TWILIO_PHONE_NUMBER,
+            to=DOCTOR_PHONE_NUMBER
+        )
+    except Exception as e:
+        print("Failed to send SMS:", e)
 
 app = Flask(__name__)
 app.secret_key = "rmp_clinic_secure_key"
@@ -67,6 +89,9 @@ def book_appointment():
         conn.commit()
         conn.close()
 
+        # <--- ADD THIS LINE HERE TO TRIGGER SMS AUTOMATICALLY
+        send_doctor_sms(name, date, time_slot, phone)
+
         appointment_record = {
             "name": name,
             "phone": phone,
@@ -78,7 +103,6 @@ def book_appointment():
 
     return render_template('appointment.html', info=CLINIC_INFO)
 
-# Doctor Login
 # Doctor Login
 @app.route('/login', methods=['GET', 'POST'])
 def doctor_login():

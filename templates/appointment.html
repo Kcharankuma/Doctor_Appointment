@@ -48,9 +48,20 @@
     </div>
 </div>
 
+<!-- In templates/appointment.html -->
+<!-- Change your date input to look like this: -->
+<input type="date" id="datePicker" name="date" class="form-control" required>
+
+<!-- Add this script at the bottom of templates/appointment.html -->
+<script>
+    // Set minimum date to Today
+    document.getElementById('datePicker').min = new Date().toISOString().split('T')[0];
+</script>
+
 <script>
     // Automatically restrict calendar to TODAY and FUTURE dates only
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('appointment_date').setAttribute('min', today);
 </script>
+
 {% endblock %}
