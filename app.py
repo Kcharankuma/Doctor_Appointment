@@ -1,5 +1,6 @@
 import sqlite3
 import smtplib
+import threading 
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
@@ -95,7 +96,7 @@ def book_appointment():
         time_slot = request.form.get('time_slot')
         reason = request.form.get('reason')
 
-        # Save to SQLite Database
+        # Save to SQLite Database (Instant)
         conn = sqlite3.connect('clinic.db')
         cursor = conn.cursor()
         cursor.execute('''
@@ -105,8 +106,12 @@ def book_appointment():
         conn.commit()
         conn.close()
 
-        # Send Free Instant Email Alert to Your Father's Phone
-        send_email_notification(name, phone, date, time_slot, reason)
+        # Send Email in the BACKGROUND so the user doesn't wait
+        email_thread = threading.Thread(
+            target=send_email_notification, 
+            args=(name, phone, date, time_slot, reason)
+        )
+        email_thread.start()
 
         appointment_record = {
             "name": name,
@@ -118,7 +123,6 @@ def book_appointment():
         return render_template('success.html', info=CLINIC_INFO, data=appointment_record)
 
     return render_template('appointment.html', info=CLINIC_INFO)
-
 # Doctor Login
 @app.route('/login', methods=['GET', 'POST'])
 def doctor_login():
