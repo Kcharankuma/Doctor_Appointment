@@ -3,14 +3,17 @@ import smtplib
 import threading 
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
+
+# Fetch credentials from Environment Variables (Fallback to hardcoded for local testing)
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com")
+SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "dtnjsustgcsrehdf").replace(" ", "")
+DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark310@gmail.com")
 
 app = Flask(__name__)
 app.secret_key = "rmp_clinic_secure_key"
 
-# Email Configuration
-SENDER_EMAIL = "charankumark816@gmail.com"  # Your sender Gmail address
-SENDER_PASSWORD = "dtnjsustgcsrehdf"     # Replace with your 16-character App Password from Google
-DOCTOR_EMAIL = "charankumark310@gmail.com"      # Replace with your father's Gmail address to receive alerts
+
 
 CLINIC_INFO = {
     "doctor_name": "Dr.KAMMARI MAHESWARA ACHARI",
@@ -40,18 +43,16 @@ def send_email_notification(name, phone, date, time_slot, reason):
         msg['From'] = SENDER_EMAIL
         msg['To'] = DOCTOR_EMAIL
 
-        # Use TLS on Port 587 (More reliable than SSL 465)
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        # Use Port 587 with explicit timeout for cloud servers
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
         server.ehlo()
         server.starttls()
-        # Remove spaces from app password just in case
-        clean_password = SENDER_PASSWORD.replace(" ", "")
-        server.login(SENDER_EMAIL, clean_password)
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.sendmail(SENDER_EMAIL, DOCTOR_EMAIL, msg.as_string())
         server.close()
         print("Email notification sent successfully!")
     except Exception as e:
-        print("Email notification failed with error:", e)
+        print("Email notification failed on Render:", e)
 
 # Database Initialization
 def init_db():
