@@ -5,7 +5,7 @@ import threading
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 # Fetch recipient doctor email from Environment Variables (with fallback)
-DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark310@gmail.com")
+DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com")
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "rmp_clinic_secure_key")
 
@@ -59,7 +59,7 @@ def send_email_notification(name, phone, patient_email, date, time_slot, reason)
         print("❌ RESEND_API_KEY missing!")
         return
 
-    # Send email to both Doctor and Customer
+    # Send email to both Doctor and Customer (if provided)
     recipients = [doctor_email]
     if patient_email:
         recipients.append(patient_email)
@@ -84,56 +84,8 @@ def send_email_notification(name, phone, patient_email, date, time_slot, reason)
     except Exception as e:
         print(f"⚠️ Email Error: {e}")
 
-
-@app.route('/appointment', methods=['GET', 'POST'])
-def appointment():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        patient_email = request.form.get('email')  # Capture customer email
-        date = request.form.get('date')
-        time_slot = request.form.get('time_slot')
-        reason = request.form.get('reason')
-
-        # Run email sending in background thread
-        thread = threading.Thread(
-            target=send_email_notification, 
-            args=(name, phone, patient_email, date, time_slot, reason)
-        )
-        thread.start()
-
-        return render_template('appointment.html', success=True)
-
-    return render_template('appointment.html')
-
-
 # ==========================================
-# APPOINTMENT ROUTE (SINGLE DEFINITION)
-# ==========================================
-@app.route('/appointment', methods=['GET', 'POST'])
-def appointment():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        patient_email = request.form.get('email')
-        date = request.form.get('date')
-        time_slot = request.form.get('time_slot')
-        reason = request.form.get('reason')
-
-        # Trigger background email thread
-        thread = threading.Thread(
-            target=send_email_notification, 
-            args=(name, phone, patient_email, date, time_slot, reason)
-        )
-        thread.start()
-
-        # Save to database / appointments list logic here...
-
-        return render_template('appointment.html', success=True)
-
-    return render_template('appointment.html')
-# ==========================================
-# ROUTES
+# PUBLIC ROUTES
 # ==========================================
 @app.route('/')
 def home():
@@ -154,11 +106,12 @@ def book_appointment():
     if request.method == 'POST':
         name = request.form.get('name')
         phone = request.form.get('phone')
+        patient_email = request.form.get('email')
         date = request.form.get('date')
         time_slot = request.form.get('time_slot')
         reason = request.form.get('reason')
 
-        # Save to SQLite Database
+        # 1. Save to SQLite Database
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
@@ -168,16 +121,17 @@ def book_appointment():
         conn.commit()
         conn.close()
 
-        # Send Email in background thread
+        # 2. Trigger Email in background thread (Doctor + Customer)
         email_thread = threading.Thread(
             target=send_email_notification, 
-            args=(name, phone, date, time_slot, reason)
+            args=(name, phone, patient_email, date, time_slot, reason)
         )
         email_thread.start()
 
         appointment_record = {
             "name": name,
             "phone": phone,
+            "email": patient_email,
             "date": date,
             "time_slot": time_slot,
             "reason": reason
@@ -186,8 +140,9 @@ def book_appointment():
 
     return render_template('appointment.html', info=CLINIC_INFO)
 
-# Doctor Login
-# Updated Login Route in app.py
+# ==========================================
+# DOCTOR ADMIN ROUTES
+# ==========================================
 @app.route('/login', methods=['GET', 'POST'])
 def doctor_login():
     if request.method == 'POST':
@@ -202,7 +157,6 @@ def doctor_login():
 
     return render_template('login.html', info=CLINIC_INFO)
 
-# Doctor Dashboard
 @app.route('/dashboard')
 def doctor_dashboard():
     if not session.get('logged_in'):
@@ -228,7 +182,6 @@ def doctor_dashboard():
     ]
     return render_template('dashboard.html', info=CLINIC_INFO, appointments=appointments)
 
-# Delete Appointment
 @app.route('/appointment/delete/<int:app_id>')
 def delete_appointment(app_id):
     if not session.get('logged_in'):
@@ -243,6 +196,7 @@ def delete_appointment(app_id):
     flash("Appointment marked as completed.", "success")
     return redirect(url_for('doctor_dashboard'))
 
+@app.route('/admin/logout')
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
