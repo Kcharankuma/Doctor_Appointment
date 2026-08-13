@@ -1,13 +1,10 @@
 import os
 import sqlite3
-import smtplib
+import requests
 import threading 
-from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-# Fetch credentials from Environment Variables
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com")
-SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "dtnjsustgcsrehdf").replace(" ", "")
+# Fetch recipient doctor email from Environment Variables (with fallback)
 DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark310@gmail.com")
 
 app = Flask(__name__)
@@ -53,35 +50,27 @@ def init_db():
 init_db()
 
 # ==========================================
-# EMAIL NOTIFICATION (ASYNC THREAD)
+# RESEND EMAIL NOTIFICATION (HTTP API)
 # ==========================================
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "YOUR_RESEND_API_KEY_HERE")
+
 def send_email_notification(name, phone, date, time_slot, reason):
     try:
-        subject = f"🏥 New Appointment: {name}"
-        body = f"""
-        New Patient Appointment Booked!
-
-        Patient Name: {name}
-        Phone Number: {phone}
-        Date: {date}
-        Session: {time_slot}
-        Reason: {reason if reason else 'General Consultation'}
-        """
-        
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = DOCTOR_EMAIL
-
-        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
-        server.ehlo()
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, DOCTOR_EMAIL, msg.as_string())
-        server.close()
-        print("Email notification sent successfully!")
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "from": "Clinic Booking <onboarding@resend.dev>",
+            "to": [DOCTOR_EMAIL],
+            "subject": f"🏥 New Appointment: {name}",
+            "text": f"New Patient: {name}\nPhone: {phone}\nDate: {date}\nSession: {time_slot}\nReason: {reason if reason else 'General Checkup'}"
+        }
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        print("📲 Resend Email API Response:", response.status_code, response.text)
     except Exception as e:
-        print("Email notification failed:", e)
+        print("⚠️ Email API Error:", e)
 
 # ==========================================
 # ROUTES
