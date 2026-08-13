@@ -1,9 +1,7 @@
 import os
 import sqlite3
-import smtplib
 import threading 
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
@@ -49,29 +47,30 @@ def init_db():
 init_db()
 
 # ==========================================
-# GMAIL SMTP EMAIL NOTIFICATION (PORT 465 SSL)
+# BREVO HTTP API EMAIL NOTIFICATION (FREE 300/DAY)
 # ==========================================
 def send_email_notification(name, phone, patient_email, date, time_slot, reason):
+    api_key = os.environ.get("BREVO_API_KEY", "").strip()
     sender_email = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com").strip()
-    sender_password = os.environ.get("SENDER_PASSWORD", "").strip()
     doctor_email = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com").strip()
 
-    if not sender_password:
-        print("❌ SENDER_PASSWORD missing in Environment Variables!")
+    if not api_key:
+        print("❌ BREVO_API_KEY missing in Environment Variables!")
         return
 
     # Build recipient list (Doctor + Patient)
-    recipients = [doctor_email]
+    to_list = [{"email": doctor_email}]
     if patient_email and patient_email != doctor_email:
-        recipients.append(patient_email)
+        to_list.append({"email": patient_email})
 
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = f"Primary Healthcare Center <{sender_email}>"
-        msg['To'] = ", ".join(recipients)
-        msg['Subject'] = f"🏥 Appointment Confirmation: {name}"
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
 
-        body = f"""Dear {name},
+    body_text = f"""Dear {name},
 
 Your appointment has been booked successfully!
 
@@ -85,17 +84,23 @@ Thank you for choosing our clinic!
 
 Dr. KAMMARI MAHESWARA ACHARI
 Primary Healthcare Center, Gorukallu Village
-        """
-        msg.attach(MIMEText(body, 'plain'))
+    """
 
-        # Use Port 465 with SMTP_SSL to bypass Render's Port 587 block
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, recipients, msg.as_string())
-        print(f"✅ Email sent successfully to: {recipients}")
+    payload = {
+        "sender": {"name": "Primary Healthcare Center", "email": sender_email},
+        "to": to_list,
+        "subject": f"🏥 Appointment Confirmation: {name}",
+        "textContent": body_text
+    }
 
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code in [200, 201]:
+            print(f"✅ Brevo API Email sent successfully! Status Code: {response.status_code}")
+        else:
+            print(f"⚠️ Brevo API Error ({response.status_code}): {response.text}")
     except Exception as e:
-        print(f"⚠️ SMTP Email Error: {e}")
+        print(f"⚠️ HTTP Email Error: {e}")
 
 # ==========================================
 # PUBLIC ROUTES
