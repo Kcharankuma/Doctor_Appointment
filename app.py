@@ -59,7 +59,7 @@ def send_email_notification(name, phone, patient_email, date, time_slot, reason)
         print("❌ RESEND_API_KEY missing!")
         return
 
-    # List recipients: Send to Doctor + Patient (if provided)
+    # Send email to both Doctor and Customer
     recipients = [doctor_email]
     if patient_email:
         recipients.append(patient_email)
@@ -74,7 +74,7 @@ def send_email_notification(name, phone, patient_email, date, time_slot, reason)
             "from": "Clinic Booking <onboarding@resend.dev>",
             "to": recipients,
             "subject": f"🏥 Appointment Confirmation: {name}",
-            "text": f"Dear {name},\n\nYour appointment has been booked successfully!\n\nDetails:\n- Date: {date}\n- Session: {time_slot}\n- Reason: {reason if reason else 'General Checkup'}\n- Phone: {phone}\n\nThank you for choosing our clinic."
+            "text": f"Dear {name},\n\nYour appointment has been booked successfully!\n\nBooking Details:\n- Date: {date}\n- Session: {time_slot}\n- Reason: {reason if reason else 'General Checkup'}\n- Contact: {phone}\n\nThank you for choosing our clinic!"
         }
         
         response = requests.post(url, json=payload, headers=headers, timeout=10)
@@ -82,7 +82,29 @@ def send_email_notification(name, phone, patient_email, date, time_slot, reason)
         print(f"📲 Resend API Response: {response.text}")
         
     except Exception as e:
-        print(f"⚠️ Email Dispatch Error: {e}")
+        print(f"⚠️ Email Error: {e}")
+
+
+@app.route('/appointment', methods=['GET', 'POST'])
+def appointment():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        patient_email = request.form.get('email')  # Capture customer email
+        date = request.form.get('date')
+        time_slot = request.form.get('time_slot')
+        reason = request.form.get('reason')
+
+        # Run email sending in background thread
+        thread = threading.Thread(
+            target=send_email_notification, 
+            args=(name, phone, patient_email, date, time_slot, reason)
+        )
+        thread.start()
+
+        return render_template('appointment.html', success=True)
+
+    return render_template('appointment.html')
 
 
 @app.route('/appointment', methods=['GET', 'POST'])

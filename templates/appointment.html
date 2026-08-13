@@ -2,8 +2,7 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card border-0 shadow-sm p-4">
-            <h2 class="text-center text-primary mb-4 fw-bold">Book a Clinic Appointment
-            </h2>
+            <h2 class="text-center text-primary mb-4 fw-bold">Book a Clinic Appointment</h2>
 
             {% if error_msg %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -18,15 +17,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Mobile Phone
-                        Number</label>
+                    <label class="form-label fw-bold">Mobile Phone Number</label>
                     <input type="tel" name="phone" class="form-control" required minlength="10" maxlength="10" placeholder="10-digit mobile number">
                 </div>
-                <!-- Patient Email -->
+                <!-- Patient Email Field -->
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email Address <span
-                            class="text-danger">*</span></label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="patient@example.com" required>
+                    <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="customer@example.com" required>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -36,22 +33,18 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Time Session</label>
                         <select name="time_slot" class="form-select" required>
-                            <option value="Morning (9 AM - 1 PM)">Morning
-                                Session (9:00 AM - 1:00 PM)</option>
-                            <option value="Evening (5 PM - 9 PM)">Evening
-                                Session (5:00 PM - 9:00 PM)</option>
+                            <option value="Morning (9 AM - 1 PM)">Morning Session (9:00 AM - 1:00 PM)</option>
+                            <option value="Evening (5 PM - 9 PM)">Evening Session (5:00 PM - 9:00 PM)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Reason for Visit /
-                        Symptoms</label>
+                    <label class="form-label fw-bold">Reason for Visit / Symptoms</label>
                     <textarea name="reason" class="form-control" rows="3" required minlength="3" maxlength="200" placeholder="Describe symptoms (e.g., fever, cold, general BP checkup)"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Confirm
-                    Booking</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Confirm Booking</button>
             </form>
         </div>
     </div>
