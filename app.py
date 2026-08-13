@@ -88,7 +88,7 @@ Primary Healthcare Center, Gorukallu Village
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        # Connect using SSL on Port 465 (Bypasses Render Port 587 block)
+        # Use Port 465 with SMTP_SSL to bypass Render's Port 587 block
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, recipients, msg.as_string())
