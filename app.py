@@ -107,28 +107,31 @@ def appointment():
     return render_template('appointment.html')
 
 
+# ==========================================
+# APPOINTMENT ROUTE (SINGLE DEFINITION)
+# ==========================================
 @app.route('/appointment', methods=['GET', 'POST'])
 def appointment():
     if request.method == 'POST':
         name = request.form.get('name')
         phone = request.form.get('phone')
-        email = request.form.get('email')  # Capture Patient Email
+        patient_email = request.form.get('email')
         date = request.form.get('date')
         time_slot = request.form.get('time_slot')
         reason = request.form.get('reason')
 
-        # Trigger Email Thread
+        # Trigger background email thread
         thread = threading.Thread(
             target=send_email_notification, 
-            args=(name, phone, email, date, time_slot, reason)
+            args=(name, phone, patient_email, date, time_slot, reason)
         )
         thread.start()
 
-        # Save appointment logic here...
+        # Save to database / appointments list logic here...
+
         return render_template('appointment.html', success=True)
 
     return render_template('appointment.html')
-
 # ==========================================
 # ROUTES
 # ==========================================
