@@ -92,7 +92,6 @@ Primary Healthcare Center, Gorukallu Village
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, recipients, msg.as_string())
-
         print(f"✅ Email sent successfully to: {recipients}")
 
     except Exception as e:
