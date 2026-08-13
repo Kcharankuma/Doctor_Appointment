@@ -49,7 +49,7 @@ def init_db():
 init_db()
 
 # ==========================================
-# GMAIL SMTP EMAIL NOTIFICATION (100% FREE)
+# GMAIL SMTP EMAIL NOTIFICATION (PORT 465 SSL)
 # ==========================================
 def send_email_notification(name, phone, patient_email, date, time_slot, reason):
     sender_email = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com").strip()
@@ -88,12 +88,10 @@ Primary Healthcare Center, Gorukallu Village
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        # Connect to Gmail SMTP Server
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, recipients, msg.as_string())
-        server.quit()
+        # Connect using SSL on Port 465 (Bypasses Render Port 587 block)
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipients, msg.as_string())
 
         print(f"✅ Email sent successfully to: {recipients}")
 
