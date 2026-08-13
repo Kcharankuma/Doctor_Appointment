@@ -15,12 +15,12 @@
             <form action="/appointment" method="POST">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Patient Name</label>
-                    <input type="text" name="name" class="form-control" required minlength="3" maxlength="50" pattern="[A-Za-z\s]+" title="Letters and spaces only" placeholder="Enter patient's full name">
+                    <input type="text" name="name" class="form-control" required minlength="2" maxlength="50" placeholder="Enter patient's full name">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Mobile Phone Number</label>
-                    <input type="tel" name="phone" class="form-control" required pattern="[6-9][0-9]{9}" maxlength="10" title="10-digit mobile number starting with 6, 7, 8, or 9" placeholder="10-digit mobile number">
+                    <input type="tel" name="phone" class="form-control" required minlength="10" maxlength="10" placeholder="10-digit mobile number">
                 </div>
 
                 <div class="row">
@@ -39,7 +39,7 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Reason for Visit / Symptoms</label>
-                    <textarea name="reason" class="form-control" rows="3" required minlength="5" maxlength="200" placeholder="Describe symptoms (e.g., fever, cold, general BP checkup)"></textarea>
+                    <textarea name="reason" class="form-control" rows="3" required minlength="3" maxlength="200" placeholder="Describe symptoms (e.g., fever, cold, general BP checkup)"></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Confirm Booking</button>
@@ -49,8 +49,14 @@
 </div>
 
 <script>
-    // Automatically restrict calendar to TODAY and FUTURE dates only
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('appointment_date').setAttribute('min', today);
+    // Set minimum date to today in client timezone
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const minDate = `${year}-${month}-${day}`;
+    
+    document.getElementById('appointment_date').setAttribute('min', minDate);
+    document.getElementById('appointment_date').value = minDate;
 </script>
 {% endblock %}

@@ -6,7 +6,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 
 # Fetch recipient doctor email from Environment Variables (with fallback)
 DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark310@gmail.com")
-
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "rmp_clinic_secure_key")
 
@@ -52,8 +51,7 @@ init_db()
 # ==========================================
 # RESEND EMAIL NOTIFICATION (HTTP API)
 # ==========================================
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "re_fMtCjJGR_KYeBKuHskKqeLUqfpWVbHSQQ")
-
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 def send_email_notification(name, phone, date, time_slot, reason):
     try:
         url = "https://api.resend.com/emails"
@@ -127,6 +125,7 @@ def book_appointment():
     return render_template('appointment.html', info=CLINIC_INFO)
 
 # Doctor Login
+# Updated Login Route in app.py
 @app.route('/login', methods=['GET', 'POST'])
 def doctor_login():
     if request.method == 'POST':
