@@ -51,24 +51,41 @@ init_db()
 # ==========================================
 # RESEND EMAIL NOTIFICATION (HTTP API)
 # ==========================================
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+# ==========================================
+# RESEND EMAIL NOTIFICATION (HTTP API)
+# ==========================================
 def send_email_notification(name, phone, date, time_slot, reason):
+    # Fetch key dynamically inside function to prevent caching stale values
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    doctor_email = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com").strip()
+    
+    print(f"📧 Starting email thread for: {name}")
+    print(f"🔑 Loaded RESEND_API_KEY length: {len(api_key)}")
+    print(f"📩 Target Email: {doctor_email}")
+
+    if not api_key or api_key == "YOUR_RESEND_API_KEY_HERE":
+        print("❌ CRITICAL ERROR: RESEND_API_KEY is missing or invalid in Environment Variables!")
+        return
+
     try:
         url = "https://api.resend.com/emails"
         headers = {
-            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         payload = {
             "from": "Clinic Booking <onboarding@resend.dev>",
-            "to": [DOCTOR_EMAIL],
+            "to": [doctor_email],
             "subject": f"🏥 New Appointment: {name}",
             "text": f"New Patient: {name}\nPhone: {phone}\nDate: {date}\nSession: {time_slot}\nReason: {reason if reason else 'General Checkup'}"
         }
+        
         response = requests.post(url, json=payload, headers=headers, timeout=10)
-        print("📲 Resend Email API Response:", response.status_code, response.text)
+        print(f"📲 Resend API Status Code: {response.status_code}")
+        print(f"📲 Resend API Full Response: {response.text}")
+        
     except Exception as e:
-        print("⚠️ Email API Error:", e)
+        print(f"⚠️ Exception during email dispatch: {e}")
 
 # ==========================================
 # ROUTES
