@@ -52,7 +52,7 @@ init_db()
 # ==========================================
 # RESEND EMAIL NOTIFICATION (HTTP API)
 # ==========================================
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "YOUR_RESEND_API_KEY_HERE")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "re_fMtCjJGR_KYeBKuHskKqeLUqfpWVbHSQQ")
 
 def send_email_notification(name, phone, date, time_slot, reason):
     try:
