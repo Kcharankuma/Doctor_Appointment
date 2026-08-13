@@ -1,11 +1,11 @@
 import os
 import sqlite3
-import requests
+import smtplib
 import threading 
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-# Fetch recipient doctor email from Environment Variables (with fallback)
-DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com")
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "rmp_clinic_secure_key")
 
@@ -49,40 +49,56 @@ def init_db():
 init_db()
 
 # ==========================================
-# RESEND EMAIL NOTIFICATION (HTTP API)
+# GMAIL SMTP EMAIL NOTIFICATION (100% FREE)
 # ==========================================
 def send_email_notification(name, phone, patient_email, date, time_slot, reason):
-    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    sender_email = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com").strip()
+    sender_password = os.environ.get("SENDER_PASSWORD", "").strip()
     doctor_email = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com").strip()
-    
-    if not api_key:
-        print("❌ RESEND_API_KEY missing!")
+
+    if not sender_password:
+        print("❌ SENDER_PASSWORD missing in Environment Variables!")
         return
 
-    # Send email to both Doctor and Customer (if provided)
+    # Build recipient list (Doctor + Patient)
     recipients = [doctor_email]
-    if patient_email:
+    if patient_email and patient_email != doctor_email:
         recipients.append(patient_email)
 
     try:
-        url = "https://api.resend.com/emails"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "from": "Clinic Booking <onboarding@resend.dev>",
-            "to": recipients,
-            "subject": f"🏥 Appointment Confirmation: {name}",
-            "text": f"Dear {name},\n\nYour appointment has been booked successfully!\n\nBooking Details:\n- Date: {date}\n- Session: {time_slot}\n- Reason: {reason if reason else 'General Checkup'}\n- Contact: {phone}\n\nThank you for choosing our clinic!"
-        }
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        print(f"📲 Resend API Status Code: {response.status_code}")
-        print(f"📲 Resend API Response: {response.text}")
-        
+        msg = MIMEMultipart()
+        msg['From'] = f"Primary Healthcare Center <{sender_email}>"
+        msg['To'] = ", ".join(recipients)
+        msg['Subject'] = f"🏥 Appointment Confirmation: {name}"
+
+        body = f"""Dear {name},
+
+Your appointment has been booked successfully!
+
+Booking Details:
+- Date: {date}
+- Session: {time_slot}
+- Reason: {reason if reason else 'General Checkup'}
+- Contact: {phone}
+
+Thank you for choosing our clinic!
+
+Dr. KAMMARI MAHESWARA ACHARI
+Primary Healthcare Center, Gorukallu Village
+        """
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Connect to Gmail SMTP Server
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipients, msg.as_string())
+        server.quit()
+
+        print(f"✅ Email sent successfully to: {recipients}")
+
     except Exception as e:
-        print(f"⚠️ Email Error: {e}")
+        print(f"⚠️ SMTP Email Error: {e}")
 
 # ==========================================
 # PUBLIC ROUTES
@@ -111,7 +127,7 @@ def book_appointment():
         time_slot = request.form.get('time_slot')
         reason = request.form.get('reason')
 
-        # 1. Save to SQLite Database
+        # Save to SQLite Database
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
@@ -121,7 +137,7 @@ def book_appointment():
         conn.commit()
         conn.close()
 
-        # 2. Trigger Email in background thread (Doctor + Customer)
+        # Send Email in background thread (Doctor + Customer)
         email_thread = threading.Thread(
             target=send_email_notification, 
             args=(name, phone, patient_email, date, time_slot, reason)
