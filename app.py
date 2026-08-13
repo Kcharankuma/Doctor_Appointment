@@ -51,21 +51,18 @@ init_db()
 # ==========================================
 # RESEND EMAIL NOTIFICATION (HTTP API)
 # ==========================================
-# ==========================================
-# RESEND EMAIL NOTIFICATION (HTTP API)
-# ==========================================
-def send_email_notification(name, phone, date, time_slot, reason):
-    # Fetch key dynamically inside function to prevent caching stale values
+def send_email_notification(name, phone, patient_email, date, time_slot, reason):
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
     doctor_email = os.environ.get("DOCTOR_EMAIL", "charankumark816@gmail.com").strip()
     
-    print(f"📧 Starting email thread for: {name}")
-    print(f"🔑 Loaded RESEND_API_KEY length: {len(api_key)}")
-    print(f"📩 Target Email: {doctor_email}")
-
-    if not api_key or api_key == "YOUR_RESEND_API_KEY_HERE":
-        print("❌ CRITICAL ERROR: RESEND_API_KEY is missing or invalid in Environment Variables!")
+    if not api_key:
+        print("❌ RESEND_API_KEY missing!")
         return
+
+    # List recipients: Send to Doctor + Patient (if provided)
+    recipients = [doctor_email]
+    if patient_email:
+        recipients.append(patient_email)
 
     try:
         url = "https://api.resend.com/emails"
@@ -75,17 +72,40 @@ def send_email_notification(name, phone, date, time_slot, reason):
         }
         payload = {
             "from": "Clinic Booking <onboarding@resend.dev>",
-            "to": [doctor_email],
-            "subject": f"🏥 New Appointment: {name}",
-            "text": f"New Patient: {name}\nPhone: {phone}\nDate: {date}\nSession: {time_slot}\nReason: {reason if reason else 'General Checkup'}"
+            "to": recipients,
+            "subject": f"🏥 Appointment Confirmation: {name}",
+            "text": f"Dear {name},\n\nYour appointment has been booked successfully!\n\nDetails:\n- Date: {date}\n- Session: {time_slot}\n- Reason: {reason if reason else 'General Checkup'}\n- Phone: {phone}\n\nThank you for choosing our clinic."
         }
         
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         print(f"📲 Resend API Status Code: {response.status_code}")
-        print(f"📲 Resend API Full Response: {response.text}")
+        print(f"📲 Resend API Response: {response.text}")
         
     except Exception as e:
-        print(f"⚠️ Exception during email dispatch: {e}")
+        print(f"⚠️ Email Dispatch Error: {e}")
+
+
+@app.route('/appointment', methods=['GET', 'POST'])
+def appointment():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        email = request.form.get('email')  # Capture Patient Email
+        date = request.form.get('date')
+        time_slot = request.form.get('time_slot')
+        reason = request.form.get('reason')
+
+        # Trigger Email Thread
+        thread = threading.Thread(
+            target=send_email_notification, 
+            args=(name, phone, email, date, time_slot, reason)
+        )
+        thread.start()
+
+        # Save appointment logic here...
+        return render_template('appointment.html', success=True)
+
+    return render_template('appointment.html')
 
 # ==========================================
 # ROUTES
