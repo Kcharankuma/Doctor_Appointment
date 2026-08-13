@@ -1,30 +1,60 @@
+import os
 import sqlite3
 import smtplib
 import threading 
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import os
 
-# Fetch credentials from Environment Variables (Fallback to hardcoded for local testing)
+# Fetch credentials from Environment Variables
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "charankumark816@gmail.com")
 SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "dtnjsustgcsrehdf").replace(" ", "")
 DOCTOR_EMAIL = os.environ.get("DOCTOR_EMAIL", "charankumark310@gmail.com")
 
 app = Flask(__name__)
-app.secret_key = "rmp_clinic_secure_key"
-
-
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "rmp_clinic_secure_key")
 
 CLINIC_INFO = {
-    "doctor_name": "Dr.KAMMARI MAHESWARA ACHARI",
+    "doctor_name": "Dr. KAMMARI MAHESWARA ACHARI",
     "qualification": "RMP (RURAL Medical Practitioner)",
     "clinic_name": "Primary Healthcare Center",
     "experience": "25+ Years of Dedicated Community Care",
     "phone": "+91 7075575715",
-    "address": "Gorukallu Village, Near Bus Stand, Nandyal, Andhra Pradesh,India-518501",
+    "address": "Gorukallu Village, Near Bus Stand, Nandyal, Andhra Pradesh, India-518501",
     "timings": "Morning: 9:00 AM - 1:00 PM | Evening: 5:00 PM - 9:00 PM (Mon - Sat)"
 }
 
+# ==========================================
+# DATABASE HELPER FUNCTIONS
+# ==========================================
+def get_db_connection():
+    conn = sqlite3.connect('clinic.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS appointments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            date TEXT NOT NULL,
+            time_slot TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Initialize DB on server start
+init_db()
+
+# ==========================================
+# EMAIL NOTIFICATION (ASYNC THREAD)
+# ==========================================
 def send_email_notification(name, phone, date, time_slot, reason):
     try:
         subject = f"🏥 New Appointment: {name}"
@@ -43,7 +73,6 @@ def send_email_notification(name, phone, date, time_slot, reason):
         msg['From'] = SENDER_EMAIL
         msg['To'] = DOCTOR_EMAIL
 
-        # Use Port 587 with explicit timeout for cloud servers
         server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
         server.ehlo()
         server.starttls()
@@ -52,28 +81,11 @@ def send_email_notification(name, phone, date, time_slot, reason):
         server.close()
         print("Email notification sent successfully!")
     except Exception as e:
-        print("Email notification failed on Render:", e)
+        print("Email notification failed:", e)
 
-# Database Initialization
-def init_db():
-    conn = sqlite3.connect('clinic.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            date TEXT NOT NULL,
-            time_slot TEXT NOT NULL,
-            reason TEXT,
-            status TEXT DEFAULT 'Pending'
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-init_db()
-
+# ==========================================
+# ROUTES
+# ==========================================
 @app.route('/')
 def home():
     return render_template('index.html', info=CLINIC_INFO)
@@ -97,17 +109,17 @@ def book_appointment():
         time_slot = request.form.get('time_slot')
         reason = request.form.get('reason')
 
-        # Save to SQLite Database (Instant)
-        conn = sqlite3.connect('clinic.db')
+        # Save to SQLite Database
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO appointments (name, phone, date, time_slot, reason)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO appointments (name, phone, date, time_slot, reason, status)
+            VALUES (?, ?, ?, ?, ?, 'Pending')
         ''', (name, phone, date, time_slot, reason))
         conn.commit()
         conn.close()
 
-        # Send Email in the BACKGROUND so the user doesn't wait
+        # Send Email in background thread
         email_thread = threading.Thread(
             target=send_email_notification, 
             args=(name, phone, date, time_slot, reason)
@@ -124,6 +136,7 @@ def book_appointment():
         return render_template('success.html', info=CLINIC_INFO, data=appointment_record)
 
     return render_template('appointment.html', info=CLINIC_INFO)
+
 # Doctor Login
 @app.route('/login', methods=['GET', 'POST'])
 def doctor_login():
@@ -145,25 +158,33 @@ def doctor_dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('doctor_login'))
 
-    conn = sqlite3.connect('clinic.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT id, name, phone, date, time_slot, reason, status FROM appointments ORDER BY id DESC')
     rows = cursor.fetchall()
     conn.close()
 
     appointments = [
-        {"id": row[0], "name": row[1], "phone": row[2], "date": row[3], "time_slot": row[4], "reason": row[5], "status": row[6]}
+        {
+            "id": row['id'], 
+            "name": row['name'], 
+            "phone": row['phone'], 
+            "date": row['date'], 
+            "time_slot": row['time_slot'], 
+            "reason": row['reason'], 
+            "status": row['status']
+        }
         for row in rows
     ]
     return render_template('dashboard.html', info=CLINIC_INFO, appointments=appointments)
 
-# Complete / Delete Appointment
+# Delete Appointment
 @app.route('/appointment/delete/<int:app_id>')
 def delete_appointment(app_id):
     if not session.get('logged_in'):
         return redirect(url_for('doctor_login'))
 
-    conn = sqlite3.connect('clinic.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM appointments WHERE id = ?', (app_id,))
     conn.commit()
@@ -178,4 +199,5 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
